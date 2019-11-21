@@ -2,7 +2,8 @@ import numpy as np
 
 
 def open_file(filename, encoding):
-    with open('/content/drive/My Drive/datasets/shakespeare.txt', encoding='utf-8') as f:
+    ##check if it is directory of file
+    with open(filename, encoding=encoding) as f:
         story = f.readlines()
 
     return story
