@@ -45,12 +45,16 @@ def generator(sent, word, seq_len, vocab_len, batch_size):
 
 
 def main():
+
     args = parser.parse_args()
-    story, end_story = load_dataset.open_file(args.dataset, args.encoding)
+    print('Loading data...\n')
+    story = load_dataset.open_file(args.dataset, args.encoding)
+
     story_tokens = load_dataset.make_tokens(story)
 
     sentences = load_dataset.make_sentences(story_tokens, args.seq_len)
 
+    print('Tokenizing...\n')
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(sentences)
     sequences = tokenizer.texts_to_sequences(sentences)
@@ -59,8 +63,8 @@ def main():
 
     VOCAB_LEN = len(tokenizer.word_counts) + 1
     # print(tokenizer.index_word[95])
-    total = sequences.shape   ##CHANGE TO NUMPY
-
+    total = sequences.shape[0]   ##CHANGE TO NUMPY
+    print(sequences.shape)
     sequences = shuffle(sequences)
 
     train_input = sequences[int(total * 0.15):, :-1]
@@ -86,15 +90,16 @@ def main():
     model.summary()
 
     CHECK_DIR = "./checkpoints/%s-%s-epoch{epoch:03d}-words%d-sequence%d-batchsize%d-" \
-                "loss{loss:.4f}-acc{acc:.4f}-val_loss{val_loss:.4f}-val_acc{val_acc:.4f}.hdf5" % \
+                "loss{loss:.4f}-acc{accuracy:.4f}-val_loss{val_loss:.4f}-val_acc{val_accuracy:.4f}.hdf5" % \
                 ('shakespeare', args.model_name, VOCAB_LEN, args.seq_len, args.batch_size)
 
-    checkpoint = ModelCheckpoint(CHECK_DIR, monitor='val_acc', save_best_only=True)
+    checkpoint = ModelCheckpoint(CHECK_DIR, monitor='val_accuracy', save_best_only=True)
     # print_callback = LambdaCallback(on_train_end=on_train_end)
-    early_stopping = EarlyStopping(monitor='val_acc', patience=20)
+    early_stopping = EarlyStopping(monitor='val_accuracy', patience=10)
     callbacks_list = [checkpoint, early_stopping]
 
     if args.test_only is not True:
+        print('Training...\n')
         model.fit_generator(generator(train_input, train_output, args.seq_len, VOCAB_LEN, args.batch_size),
                             steps_per_epoch=int(len(train_input) / args.batch_size) + 1,
                             epochs=100,
@@ -102,5 +107,12 @@ def main():
                             validation_data=generator(test_input, test_output, args.seq_len, VOCAB_LEN, args.batch_size),
                             validation_steps=int(len(test_input) / args.batch_size) + 1)
 
+    print('Generating sample...\n')
     sample_gen = SampleGeneration(args.sample_len, args.seq_len, model, tokenizer, args.temperature)
     sample_gen.conditional()
+
+
+if __name__ == '__main__':
+    main()
+
+# python train.py --dataset 'E:\Greenhouse\TextGeneration\dataset\shakespeare\shakespeare.txt' --batch_size 256
