@@ -46,7 +46,7 @@ def generator(sent, word, seq_len, vocab_len, batch_size):
 
 def main():
     args = parser.parse_args()
-    story = load_dataset.open_file(args.dataset, args.encoding)
+    story, end_story = load_dataset.open_file(args.dataset, args.encoding)
     story_tokens = load_dataset.make_tokens(story)
 
     sentences = load_dataset.make_sentences(story_tokens, args.seq_len)
@@ -63,11 +63,11 @@ def main():
 
     sequences = shuffle(sequences)
 
-    train_input = sequences[51500:, :-1]
-    train_output = sequences[51500:, -1]
+    train_input = sequences[int(total * 0.15):, :-1]
+    train_output = sequences[int(total * 0.15):, -1]
 
-    test_input = sequences[:51500, :-1]
-    test_output = sequences[:51500, -1]
+    test_input = sequences[:int(total * 0.15), :-1]
+    test_output = sequences[:int(total * 0.15), -1]
 
     print(np.asarray(train_input).shape)
     print(np.asarray(train_output).shape)
@@ -85,9 +85,9 @@ def main():
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.summary()
 
-    CHECK_DIR = "./checkpoints/Shakespeare-epoch{epoch:03d}-words%d-sequence%d-batchsize%d-" \
+    CHECK_DIR = "./checkpoints/%s-%s-epoch{epoch:03d}-words%d-sequence%d-batchsize%d-" \
                 "loss{loss:.4f}-acc{acc:.4f}-val_loss{val_loss:.4f}-val_acc{val_acc:.4f}.hdf5" % \
-                (VOCAB_LEN, args.seq_len, args.batch_size)
+                ('shakespeare', args.model_name, VOCAB_LEN, args.seq_len, args.batch_size)
 
     checkpoint = ModelCheckpoint(CHECK_DIR, monitor='val_acc', save_best_only=True)
     # print_callback = LambdaCallback(on_train_end=on_train_end)

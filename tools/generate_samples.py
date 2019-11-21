@@ -43,6 +43,8 @@ class SampleGeneration():
         gen_story.extend(seed.split())
         print('TEMPERATURE:' + str(self.temp) + '\n')
 
+        end_flag = 0
+
         for i in range(self.no_of_words):
             x_pred = np.expand_dims(sentence, axis=0)
 
@@ -52,11 +54,18 @@ class SampleGeneration():
             for ix in next_indices:
                 if ix == 0:
                     continue
+
+                elif ix == self.tokenizer.word_index['|endofstory']:
+                    end_flag = 1
+                    break
                 else:
                     next_word = self.tokenizer.index_word[ix]
                     sentence = sentence[1:]
                     sentence.append(ix)
                     break
+
+            if end_flag == 1:
+                break
 
             gen_story.append(next_word)
 
