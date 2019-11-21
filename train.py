@@ -25,6 +25,8 @@ parser.add_argument('--temperature', type=float, default=0.5, help='Sampling tem
 
 
 parser.add_argument('--test_only', type=bool, default=False, help='Number of words in the generated story')
+parser.add_argument('--chkpt_path', metavar='CHKPT', type=str, default=r'E:\Greenhouse\TextGeneration\checkpoints\shakespeare-LSTM-epoch010-words14834-sequence10-batchsize256-loss3.6934-acc0.3843-val_loss3.9479-val_acc0.3616.hdf5', help='HDF5 weights file with checkpoints')
+
 parser.add_argument('--attention', metavar='ATTN', type=bool, default=False, help='Use attention mechanism')
 
 INDEX = 0
@@ -107,6 +109,10 @@ def main():
                             validation_data=generator(test_input, test_output, args.seq_len, VOCAB_LEN, args.batch_size),
                             validation_steps=int(len(test_input) / args.batch_size) + 1)
 
+    else:
+        model.load_weights(args.chkpt_path)
+
+
     print('Generating sample...\n')
     sample_gen = SampleGeneration(args.sample_len, args.seq_len, model, tokenizer, args.temperature)
     sample_gen.conditional()
@@ -115,4 +121,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-# python train.py --dataset 'E:\Greenhouse\TextGeneration\dataset\shakespeare\shakespeare.txt' --batch_size 256
+# python train.py --dataset E:\Greenhouse\TextGeneration\dataset\shakespeare\shakespeare.txt --batch_size 256

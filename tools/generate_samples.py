@@ -55,9 +55,10 @@ class SampleGeneration():
                 if ix == 0:
                     continue
 
-                elif ix == self.tokenizer.word_index['|endofstory']:
-                    end_flag = 1
-                    break
+                elif '|endofstory|' in self.tokenizer.word_index.keys():
+                    if ix == self.tokenizer.word_index['|endofstory|'] :
+                        end_flag = 1
+                        break
                 else:
                     next_word = self.tokenizer.index_word[ix]
                     sentence = sentence[1:]
@@ -66,6 +67,7 @@ class SampleGeneration():
 
             if end_flag == 1:
                 break
+
 
             gen_story.append(next_word)
 
