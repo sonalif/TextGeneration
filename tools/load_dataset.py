@@ -1,10 +1,26 @@
 import numpy as np
+import os
+from glob import glob
 
 
-def open_file(filename, encoding):
-    ##check if it is directory of file
-    with open(filename, encoding=encoding) as f:
-        story = f.readlines()
+def open_file(path, encoding):
+
+    if os.path.isfile(path):
+        if path.endswith('.txt'):
+            with open(path, encoding=encoding) as f:
+                story = f.readlines()
+
+    else:
+        if os.path.isdir(path):
+            files = []
+            for (dirpath, _, fnames) in os.walk(path):
+                for fname in fnames:
+                    files.append(os.path.join(dirpath, fname))
+
+        elif path.endswith('*'):
+            files = glob(path)
+
+        ##HANDLE MULTIPLE FILES
 
     return story
 
