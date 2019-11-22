@@ -22,7 +22,7 @@ parser.add_argument('--sample_len', metavar='CHARS', type=int, default=500, help
 parser.add_argument('--batch_size', type=int, default=128, help='Batch size')
 parser.add_argument('--encoding', type=str, default='utf-8', help='Set the encoding for reading and writing files.')
 parser.add_argument('--temperature', type=float, default=0.5, help='Sampling temperature')
-
+parser.add_argument('--generate', type=str, default='UNC', help='UNC or COND generation (unconditional or conditional')
 
 parser.add_argument('--test_only', type=bool, default=False, help='Number of words in the generated story')
 parser.add_argument('--chkpt_path', metavar='CHKPT', type=str, default=r'E:\Greenhouse\TextGeneration\checkpoints\shakespeare-LSTM-epoch010-words14834-sequence10-batchsize256-loss3.6934-acc0.3843-val_loss3.9479-val_acc0.3616.hdf5', help='HDF5 weights file with checkpoints')
@@ -112,10 +112,15 @@ def main():
     else:
         model.load_weights(args.chkpt_path)
 
-
     print('Generating sample...\n')
     sample_gen = SampleGeneration(args.sample_len, args.seq_len, model, tokenizer, args.temperature)
-    sample_gen.conditional()
+
+    if args.generate == 'UNC':
+        sample_gen.unconditional(VOCAB_LEN)
+    elif args.generate == 'COND':
+        sample_gen.conditional()
+    else:
+        print('Invalid generation type')
 
 
 if __name__ == '__main__':
