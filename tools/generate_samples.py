@@ -28,21 +28,17 @@ class SampleGeneration():
     def unconditional(self, vocab_len):
 
         np.random.seed(0)
-        seed = np.random.randint(1, vocab_len, size=self.seq_len)
+        seed = np.random.randint(1, vocab_len, size=1)
 
         # Randomly pick a seed sequences
         sentence = seed
 
         sentence = list(pad_sequences([sentence], maxlen=self.seq_len, padding='pre')[0])
 
-        while len(sentence) > self.seq_len:
-            print("Prompt too long. Enter a prompt of less than %d words:" % self.seq_len)
-            seed = input()
-        # seed_index = np.random.randint(len(sentences+sentences_test))
-        # seed = (sentences+sentences_test)[seed_index]
         gen_story = []
 
-        gen_story.extend(seed.split())
+        gen_story.append(self.tokenizer.index_word[seed[0]])
+
         print('TEMPERATURE:' + str(self.temp) + '\n')
 
         end_flag = 0
@@ -74,7 +70,6 @@ class SampleGeneration():
             gen_story.append(next_word)
 
         display(gen_story)
-
 
     def conditional(self):
         print('\nEnter prompt: \n')
