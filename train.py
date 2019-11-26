@@ -27,8 +27,6 @@ parser.add_argument('--generate', type=str, default='UNC', help='UNC or COND gen
 parser.add_argument('--embedding', type=bool, default=False, help='Use pre-trained Glove Embedding')
 parser.add_argument('--emb_path', metavar='EMB_PATH', type=str, default='E:\Greenhouse\TextGeneration\glove\glove.42B.300d.txt', help='Input file, directory, or glob pattern (utf-8 text, or preencoded .npz files).')
 
-
-
 parser.add_argument('--test_only', type=bool, default=False, help='Number of words in the generated story')
 parser.add_argument('--chkpt_path', metavar='CHKPT', type=str, default=r'E:\Greenhouse\TextGeneration\checkpoints\shakespeare-LSTM-epoch010-words14834-sequence10-batchsize256-loss3.6934-acc0.3843-val_loss3.9479-val_acc0.3616.hdf5', help='HDF5 weights file with checkpoints')
 
@@ -69,6 +67,7 @@ def main():
     vocab = tokenizer.word_counts
 
     VOCAB_LEN = len(tokenizer.word_counts) + 1
+
     # print(tokenizer.index_word[95])
     total = sequences.shape[0]   ##CHANGE TO NUMPY
     print(sequences.shape)
@@ -76,7 +75,8 @@ def main():
 
     if args.embedding:
         emb_vec = embedding.emd_vector(args.emb_path)
-        embedding_matrix = embedding.emd_matrix(vocab, VOCAB_LEN, emb_vec)
+        embedding_matrix = embedding.emd_matrix(tokenizer, VOCAB_LEN, emb_vec)
+        del emb_vec
 
     train_input = sequences[int(total * 0.15):, :-1]
     train_output = sequences[int(total * 0.15):, -1]
@@ -102,7 +102,7 @@ def main():
 
     CHECK_DIR = "./checkpoints/%s-%s-epoch{epoch:03d}-words%d-sequence%d-batchsize%d-" \
                 "loss{loss:.4f}-acc{accuracy:.4f}-val_loss{val_loss:.4f}-val_acc{val_accuracy:.4f}.hdf5" % \
-                ('shakespeare', args.model_name, VOCAB_LEN, args.seq_len, args.batch_size)
+                ('sherlock', args.model_name, VOCAB_LEN, args.seq_len, args.batch_size)
 
     checkpoint = ModelCheckpoint(CHECK_DIR, monitor='val_accuracy', save_best_only=True)
     # print_callback = LambdaCallback(on_train_end=on_train_end)
@@ -136,4 +136,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-# python train.py --dataset E:\Greenhouse\TextGeneration\dataset\shakespeare\shakespeare.txt --batch_size 256
+# python train.py --dataset E:\Greenhouse\TextGeneration\dataset\sherlock\* --embedding True --seq_len 50 --sample_len 1000
