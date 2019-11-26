@@ -2,7 +2,7 @@ from keras.callbacks import LambdaCallback, EarlyStopping, ModelCheckpoint
 from tensorflow.keras.preprocessing.text import Tokenizer
 from sklearn.utils import shuffle
 from tools.generate_samples import SampleGeneration
-from tools import load_dataset
+from tools import load_dataset, embedding
 from tensorflow.keras.utils import to_categorical
 
 from model.model import Model
@@ -13,6 +13,7 @@ import argparse
 
 parser = argparse.ArgumentParser(
     description='Hyper parameters for text Generation with LSTM',
+    add_help=True,
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--dataset', metavar='PATH', type=str, required=True, help='Input file, directory, or glob pattern (utf-8 text, or preencoded .npz files).')
@@ -23,6 +24,10 @@ parser.add_argument('--batch_size', type=int, default=128, help='Batch size')
 parser.add_argument('--encoding', type=str, default='utf-8', help='Set the encoding for reading and writing files.')
 parser.add_argument('--temperature', type=float, default=0.5, help='Sampling temperature')
 parser.add_argument('--generate', type=str, default='UNC', help='UNC or COND generation (unconditional or conditional')
+parser.add_argument('--embedding', type=bool, default=False, help='Use pre-trained Glove Embedding')
+parser.add_argument('--emb_path', metavar='EMB_PATH', type=str, default='E:\Greenhouse\TextGeneration\glove\glove.42B.300d.txt', help='Input file, directory, or glob pattern (utf-8 text, or preencoded .npz files).')
+
+
 
 parser.add_argument('--test_only', type=bool, default=False, help='Number of words in the generated story')
 parser.add_argument('--chkpt_path', metavar='CHKPT', type=str, default=r'E:\Greenhouse\TextGeneration\checkpoints\shakespeare-LSTM-epoch010-words14834-sequence10-batchsize256-loss3.6934-acc0.3843-val_loss3.9479-val_acc0.3616.hdf5', help='HDF5 weights file with checkpoints')
@@ -69,6 +74,10 @@ def main():
     print(sequences.shape)
     sequences = shuffle(sequences)
 
+    if args.embedding:
+        emb_vec = embedding.emd_vector(args.emb_path)
+        embedding_matrix = embedding.emd_matrix(vocab, VOCAB_LEN, emb_vec)
+
     train_input = sequences[int(total * 0.15):, :-1]
     train_output = sequences[int(total * 0.15):, -1]
 
@@ -82,11 +91,11 @@ def main():
     print(np.asarray(test_output).shape)
 
     if args.model_name == 'LSTM':
-        model = Model(VOCAB_LEN, args.seq_len).lstm()
+        model = Model(VOCAB_LEN, args.seq_len, args.embedding, embedding_matrix).lstm()
     elif args.model == 'RNN':
-        model = Model(VOCAB_LEN, args.seq_len).rnn()
+        model = Model(VOCAB_LEN, args.seq_len, args.embedding, embedding_matrix).rnn()
     else:
-        model = Model(VOCAB_LEN, args.seq_len).bidirectional_lstm()
+        model = Model(VOCAB_LEN, args.seq_len, args.embedding, embedding_matrix).bidirectional_lstm()
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.summary()
@@ -111,6 +120,7 @@ def main():
 
     else:
         model.load_weights(args.chkpt_path)
+        print("Checkpoint loaded!")
 
     print('Generating sample...\n')
     sample_gen = SampleGeneration(args.sample_len, args.seq_len, model, tokenizer, args.temperature)

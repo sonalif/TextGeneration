@@ -27,7 +27,7 @@ def open_file(path, encoding):
         for file in files:
             with open(file, encoding=encoding) as f:
                 story = f.readlines()
-                stories.append(story)
+                stories.append(story[4:6]+story[10:-26])
     return stories
 
 
@@ -43,11 +43,11 @@ def make_tokens(stories):
         for story in stories:
             temp = []
             for i, line in enumerate(story):
-                story[i] = line.lower().replace('.', ' . ').replace(',', ' , ').replace('?', ' ? ').replace('"',' " ').replace(
+                story[i] = line.lower().replace('.', ' . ').replace('\n', ' \n ').replace(',', ' , ').replace('?', ' ? ').replace('"',' " ').replace(
                     '!', ' ! ').replace(':', ' : ').replace(';', ' ; ').replace('--', ' ').replace('-', ' ').replace(',',' , ')
                 temp.extend(story[i].split(' '))
             temp.append('|endofstory|')
-            story_in_words.append(temp)
+            story_in_words.append(list(filter(None, temp)))
 
     return story_in_words
 

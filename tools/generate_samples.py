@@ -26,18 +26,17 @@ class SampleGeneration():
         self.tokenizer = tokenizer
 
     def unconditional(self, vocab_len):
-
+        print('1')
         np.random.seed(0)
+        print('2')
         seed = np.random.randint(1, vocab_len, size=1)
-
+        print('3')
         # Randomly pick a seed sequences
         sentence = seed
 
         sentence = list(pad_sequences([sentence], maxlen=self.seq_len, padding='pre')[0])
-
-        gen_story = []
-
-        gen_story.append(self.tokenizer.index_word[seed[0]])
+        print('4')
+        gen_story = [self.tokenizer.index_word[seed[0]]]
 
         print('TEMPERATURE:' + str(self.temp) + '\n')
 
@@ -54,7 +53,7 @@ class SampleGeneration():
                     continue
 
                 elif '|endofstory|' in self.tokenizer.word_index.keys():
-                    if ix == self.tokenizer.word_index['|endofstory|'] :
+                    if ix == self.tokenizer.word_index['|endofstory|']:
                         end_flag = 1
                         break
                 else:
@@ -66,12 +65,11 @@ class SampleGeneration():
             if end_flag == 1:
                 break
 
-
             gen_story.append(next_word)
 
         display(gen_story)
 
-    def conditional(self):
+    def conditional(self): ### MEM ALLOC ???
         print('\nEnter prompt: \n')
         # Randomly pick a seed sequences
         seed = input()
