@@ -23,7 +23,6 @@ def open_file(path, encoding):
 
         else:  ## assume glob
             files = glob(path)
-            print('glob')
 
         for file in files:
             with open(file, encoding=encoding) as f:
@@ -41,7 +40,6 @@ def make_tokens(stories):
             story_in_words.extend(stories[i].split(' '))
 
     else:
-        print('okay')
         for story in stories:
             temp = []
             for i, line in enumerate(story):
@@ -61,11 +59,9 @@ def make_sentences(story_tokens, seq_len, step=1):
         #np.asarray(sentences).shape
 
     else:
-        print('okay')
         for tokens in story_tokens:
             for i in range(0, len(tokens) - seq_len, step):
                 sentences.append(tokens[i: i + seq_len + 1])
-    print(sentences[0])
     return sentences
 
 

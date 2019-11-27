@@ -28,7 +28,7 @@ parser.add_argument('--embedding', type=bool, default=False, help='Use pre-train
 parser.add_argument('--emb_path', metavar='EMB_PATH', type=str, default='E:\Greenhouse\TextGeneration\glove\glove.42B.300d.txt', help='Input file, directory, or glob pattern (utf-8 text, or preencoded .npz files).')
 
 parser.add_argument('--test_only', type=bool, default=False, help='Number of words in the generated story')
-parser.add_argument('--chkpt_path', metavar='CHKPT', type=str, default=r'E:\Greenhouse\TextGeneration\checkpoints\shakespeare-LSTM-epoch010-words14834-sequence10-batchsize256-loss3.6934-acc0.3843-val_loss3.9479-val_acc0.3616.hdf5', help='HDF5 weights file with checkpoints')
+parser.add_argument('--chkpt_path', metavar='CHKPT', type=str, default=r'E:\Greenhouse\TextGeneration\checkpoints\sherlock-LSTM-epoch020-words16461-sequence50-batchsize128-loss3.9726-acc0.2703-val_loss4.5762-val_acc0.2739.hdf5', help='HDF5 weights file with checkpoints')
 
 parser.add_argument('--attention', metavar='ATTN', type=bool, default=False, help='Use attention mechanism')
 
@@ -70,13 +70,10 @@ def main():
 
     # print(tokenizer.index_word[95])
     total = sequences.shape[0]   ##CHANGE TO NUMPY
-    print(sequences.shape)
     sequences = shuffle(sequences)
 
     if args.embedding:
-        emb_vec = embedding.emd_vector(args.emb_path)
-        embedding_matrix = embedding.emd_matrix(tokenizer, VOCAB_LEN, emb_vec)
-        del emb_vec
+        embedding_matrix = np.load('emd_matrix.npy')
 
     train_input = sequences[int(total * 0.15):, :-1]
     train_output = sequences[int(total * 0.15):, -1]
@@ -92,7 +89,7 @@ def main():
 
     if args.model_name == 'LSTM':
         model = Model(VOCAB_LEN, args.seq_len, args.embedding, embedding_matrix).lstm()
-    elif args.model == 'RNN':
+    elif args.model_name == 'RNN':
         model = Model(VOCAB_LEN, args.seq_len, args.embedding, embedding_matrix).rnn()
     else:
         model = Model(VOCAB_LEN, args.seq_len, args.embedding, embedding_matrix).bidirectional_lstm()
@@ -108,6 +105,7 @@ def main():
     # print_callback = LambdaCallback(on_train_end=on_train_end)
     early_stopping = EarlyStopping(monitor='val_accuracy', patience=10)
     callbacks_list = [checkpoint, early_stopping]
+    #model.load_weights('E:\Greenhouse\TextGeneration\checkpoints\sherlock-LSTM-epoch001-words16461-sequence20-batchsize512-loss4.3846-acc0.2637-val_loss4.2555-val_acc0.2721.hdf5')
 
     if args.test_only is not True:
         print('Training...\n')
@@ -117,7 +115,6 @@ def main():
                             callbacks=callbacks_list,
                             validation_data=generator(test_input, test_output, args.seq_len, VOCAB_LEN, args.batch_size),
                             validation_steps=int(len(test_input) / args.batch_size) + 1)
-
     else:
         model.load_weights(args.chkpt_path)
         print("Checkpoint loaded!")
@@ -136,4 +133,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-# python train.py --dataset E:\Greenhouse\TextGeneration\dataset\sherlock\* --embedding True --seq_len 50 --sample_len 1000
+# python train.py --dataset E:\Greenhouse\TextGeneration\dataset\sherlock\* --embedding True --seq_len 20 --sample_len 1000 --batch_size 512
